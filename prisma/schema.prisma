@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  motDePasse    String
+  role          Role
+  nom           String
+  prenom        String
+  dateCreation  DateTime @default(now())
+  dateMiseAJour DateTime @updatedAt
+  employe       Employe?
+  congesDemandes Conge[] @relation("Demandeur")
+  congesValides  Conge[] @relation("Valideur")
+}
+
+model Employe {
+  id            String   @id @default(uuid())
+  utilisateurId String   @unique
+  matricule     String   @unique
+  adresse       String?
+  telephone     String?
+  dateEmbauche  DateTime
+  competences   String[]
+  poste         String
+  departement   String?
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
+  conges        Conge[]
+  presences     Presence[]
+  salaires      Salaire[]
+}
+
+model Conge {
+  id            String   @id @default(uuid())
+  employeId     String
+  type          TypeConge
+  dateDebut     DateTime
+  dateFin       DateTime
+  statut        StatutConge @default(PENDING)
+  dateDemande   DateTime @default(now())
+  demandeurId   String
+  valideurId    String?
+  employe       Employe     @relation(fields: [employeId], references: [id])
+  demandeur     Utilisateur @relation("Demandeur", fields: [demandeurId], references: [id])
+  valideur      Utilisateur? @relation("Valideur", fields: [valideurId], references: [id])
+}
+
+model Presence {
+  id            String   @id @default(uuid())
+  employeId     String
+  date          DateTime
+  type          TypePresence
+  commentaire   String?
+  employe       Employe  @relation(fields: [employeId], references: [id])
+}
+
+model Salaire {
+  id            String   @id @default(uuid())
+  employeId     String
+  montant       Float
+  prime         Float?
+  datePaiement  DateTime
+  periode       String
+  employe       Employe  @relation(fields: [employeId], references: [id])
+}
+
+model Rapport {
+  id            String   @id @default(uuid())
+  type          TypeRapport
+  dateGeneration DateTime @default(now())
+  donnees       Json
+  formatExport  FormatExport
+}
+
+enum Role {
+  ADMIN
+  RH
+  EMPLOYE
+}
+
+enum TypeConge {
+  ANNUEL
+  MALADIE
+  AUTRE
+}
+
+enum StatutConge {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TypePresence {
+  PRESENT
+  ABSENT
+}
+
+enum TypeRapport {
+  ABSENCES
+  EFFECTIFS
+  SALAIRES
+}
+
+enum FormatExport {
+  PDF
+  EXCEL
+}
