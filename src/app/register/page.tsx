@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
   const [nom, setNom] = useState('');
@@ -18,6 +19,10 @@ export default function RegisterPage() {
     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simule 2s de chargement
     console.log('Inscription avec:', { nom, prenom, email, password, confirmPassword });
     setIsLoading(false);
+  };
+
+  const handleGoogleSignIn = async () => {
+    await signIn('google', { callbackUrl: '/dashboard' });
   };
 
   return (
@@ -147,7 +152,7 @@ export default function RegisterPage() {
         </p>
         <button
           className="mt-2 w-full bg-gray-100 text-gray-800 py-2 rounded-md hover:bg-gray-200 transition flex items-center justify-center"
-          onClick={() => console.log('Inscription avec Google')}
+          onClick={handleGoogleSignIn}
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path

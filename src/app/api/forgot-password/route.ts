@@ -2,24 +2,31 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simuler un appel API (à connecter plus tard)
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simule 2s de chargement
-    console.log('Connexion avec:', { email, password });
-    setIsLoading(false);
-  };
+    setError(null);
 
-  const handleGoogleSignIn = async () => {
-    await signIn('google', { callbackUrl: '/dashboard' });
+    const res = await fetch('/api/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+    setIsLoading(false);
+
+    if (!res.ok) {
+      setError(data.error || 'Request failed');
+    } else {
+      console.log('Password reset requested:', data);
+    }
   };
 
   return (
@@ -40,7 +47,7 @@ export default function LoginPage() {
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-center mb-6 text-blue-600">Connexion à promotic_RH</h1>
+        <h1 className="text-2xl font-bold text-center mb-6 text-blue-600">Réinitialiser votre mot de passe pour PROMOTIC</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -56,20 +63,7 @@ export default function LoginPage() {
               placeholder="Entrez votre email"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-500"
-              placeholder="Entrez votre mot de passe"
-            />
-          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={isLoading}
@@ -89,39 +83,19 @@ export default function LoginPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Connexion en cours...
+                Envoi en cours...
               </>
             ) : (
-              'Se connecter'
+              'Envoyer la demande'
             )}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          Pas de compte ?{' '}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Inscrivez-vous
+          Retourner à la connexion ?{' '}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Connectez-vous
           </Link>
         </p>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          <Link href="/forgot-password" className="text-blue-600 hover:underline">
-            Mot de passe oublié ?
-          </Link>
-        </p>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Ou
-        </p>
-        <button
-          className="mt-2 w-full bg-gray-100 text-gray-800 py-2 rounded-md hover:bg-gray-200 transition flex items-center justify-center"
-          onClick={handleGoogleSignIn}
-        >
-          <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.854L12.545,10.239z"
-            />
-          </svg>
-          Se connecter avec Google
-        </button>
       </div>
     </div>
   );
