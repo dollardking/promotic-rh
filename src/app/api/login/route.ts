@@ -27,12 +27,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const session = await getServerSession(authOptions);
-    if (session) {
-      return NextResponse.json({ error: 'Already logged in' }, { status: 400 });
-    }
-
-    // Simuler la création d'une session (à remplacer par NextAuth signIn si nécessaire)
+    // Ici, tu pourrais appeler next-auth signIn ou gérer la session manuellement
     return NextResponse.json({ message: 'Login successful', user: { id: user.id, email: user.email, role: user.role } }, { status: 200 });
   } catch (error) {
     console.error(error);
